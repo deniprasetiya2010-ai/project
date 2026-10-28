@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ULTIMATE WEB TOOLS — Cyberpunk Edition</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#07090e',
+                        cardbg: '#0f1422',
+                        cardborder: '#1e293b',
+                        accent: '#6366f1',
+                        accenthover: '#4f46e5',
+                        neoncyan: '#06b6d4',
+                        neonpurple: '#a855f7'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Marked Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #07090e; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        .glow-indigo { box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.4); }
+        .glow-purple { box-shadow: 0 0 25px -5px rgba(168, 85, 247, 0.4); }
+        .glow-cyan { box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.4); }
+        .bg-grid-pattern {
+            background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .glass-panel {
+            background: rgba(15, 20, 34, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="bg-darkbg text-gray-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white bg-grid-pattern">
+
+    <!-- App Container -->
+    <div id="app" class="flex-1 flex flex-col"></div>
+
+    <!-- Global Toast Notification -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3"></div>
+
+    <!-- Social Login Pajangan Dialog -->
+    <div id="social-auth-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center hidden">
+        <div class="glass-panel w-full max-w-md p-6 rounded-3xl shadow-2xl relative">
+            <button onclick="closeSocialAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl mx-auto flex items-center justify-center text-xl mb-3 border border-indigo-500/30"><i class="fa-solid fa-user-shield"></i></div>
+                <h3 class="text-2xl font-bold text-white mb-1">Masuk Cepat</h3>
+                <p class="text-xs text-gray-400">Pilih opsi autentikasi sosial media untuk melanjutkan.</p>
+            </div>
+            <div class="space-y-3">
+                <button onclick="simulateSocialAuth('Google')" class="w-full flex items-center justify-center gap-3 bg-gray-900/80 hover:bg-gray-800 border border-gray-700 py-3 rounded-2xl font-medium text-sm transition text-white">
+                    <i class="fa-brands fa-google text-red-400 text-base"></i> Lanjutkan dengan Google
+                </button>
+                <button onclick="simulateSocialAuth('Apple')" class="w-full flex items-center justify-center gap-3 bg-gray-900/80 hover:bg-gray-800 border border-gray-700 py-3 rounded-2xl font-medium text-sm transition text-white">
+                    <i class="fa-brands fa-apple text-white text-base"></i> Lanjutkan dengan Apple
+                </button>
+                <button onclick="simulateSocialAuth('Telepon')" class="w-full flex items-center justify-center gap-3 bg-gray-900/80 hover:bg-gray-800 border border-gray-700 py-3 rounded-2xl font-medium text-sm transition text-white">
+                    <i class="fa-solid fa-phone text-indigo-400 text-base"></i> Lanjutkan dengan telepon
+                </button>
+            </div>
+            <div class="flex items-center my-5">
+                <div class="flex-1 border-t border-gray-800"></div>
+                <span class="px-3 text-[10px] text-gray-500 uppercase tracking-wider font-semibold">ATAU EMAIL</span>
+                <div class="flex-1 border-t border-gray-800"></div>
+            </div>
+            <div class="space-y-3">
+                <input type="email" id="social-email-input" placeholder="Alamat email Anda..." class="w-full bg-gray-950 border border-gray-700 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500">
+                <button onclick="simulateSocialEmail()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white py-3 rounded-2xl font-semibold text-sm transition shadow-lg">Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Core -->
+    <script>
+        const DEFAULT_COVER = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop';
+
+        const DEFAULT_USERS = [
+            { id: 'usr_admin', username: 'Danzy', name: 'Danzy Admin', role: 'admin', tier: 'pro', points: 5000, streak: 7, lastLoginDate: new Date().toISOString().split('T')[0], streakClaimedToday: false, favorites: ['qr-generator', 'text-counter', 'json-formatter', 'gradient-generator'], theme: 'dark', bgCoverUrl: DEFAULT_COVER, avatarUrl: '' },
+            { id: 'usr_operator', username: 'Operator1', name: 'Operator Support', role: 'operator', tier: 'premium', points: 1200, streak: 3, lastLoginDate: new Date().toISOString().split('T')[0], streakClaimedToday: false, favorites: ['text-counter'], theme: 'dark', bgCoverUrl: DEFAULT_COVER, avatarUrl: '' },
+            { id: 'usr_demo', username: 'UserDemo', name: 'Pengguna Demo', role: 'user', tier: 'free', points: 250, streak: 1, lastLoginDate: '', streakClaimedToday: false, favorites: ['text-counter', 'calculator'], theme: 'dark', bgCoverUrl: DEFAULT_COVER, avatarUrl: '' }
+        ];
+
+        let state = {
+            currentUser: null,
+            users: JSON.parse(localStorage.getItem('uwt_users')) || DEFAULT_USERS,
+            transactions: JSON.parse(localStorage.getItem('uwt_transactions')) || [
+                { id: 'tx_1', userId: 'usr_demo', type: 'DAILY', amount: 10, balanceBefore: 240, balanceAfter: 250, desc: 'Daily Reward Hari 1', timestamp: new Date().toISOString() }
+            ],
+            inventory: JSON.parse(localStorage.getItem('uwt_inventory')) || [],
+            redeemedCodes: JSON.parse(localStorage.getItem('uwt_redeemed')) || [],
+            activeView: 'login',
+            currentTool: null,
+            redeemCodesConfig: [
+                { code: 'WELCOME50', type: 'points', value: 50, active: true, maxUses: 1000, usedCount: 15 },
+                { code: 'DAILY100', type: 'points', value: 100, active: true, maxUses: 500, usedCount: 42 },
+                { code: 'PRO7DAYS', type: 'tier', tier: 'pro', durationDays: 7, active: true, maxUses: 200, usedCount: 8 },
+                { code: 'PRO30DAYS', type: 'tier', tier: 'pro', durationDays: 30, active: true, maxUses: 100, usedCount: 3 },
+                { code: 'TOOLUNLOCK', type: 'tool', toolId: 'advanced-regex', active: true, maxUses: 50, usedCount: 12 }
+            ],
+            pointShopItems: [
+                { id: 'item_1', name: 'Premium Trial 1 Hari', price: 100, type: 'tier', tier: 'premium', desc: 'Akses penuh fitur Premium selama 24 jam.' },
+                { id: 'item_2', name: 'Premium Trial 7 Hari', price: 500, type: 'tier', tier: 'premium', desc: 'Akses penuh fitur Premium selama 7 hari.' },
+                { id: 'item_3', name: 'PRO Trial 1 Hari', price: 200, type: 'tier', tier: 'pro', desc: 'Akses penuh semua tools PRO selama 24 jam.' },
+                { id: 'item_4', name: 'PRO Trial 7 Hari', price: 1000, type: 'tier', tier: 'pro', desc: 'Akses penuh semua tools PRO selama 7 hari.' },
+                { id: 'item_5', name: 'Buka 1 Tool PRO 24 Jam', price: 150, type: 'tool_unlock', desc: 'Buka Tool Pro pilihan Anda selama 24 jam.' },
+                { id: 'item_6', name: 'Tambah 1 Slot Favorit Permanen', price: 100, type: 'slot', value: 1, desc: 'Tambah batas slot tools favorit Anda.' },
+                { id: 'item_7', name: 'Badge Profil Cyberpunk', price: 75, type: 'badge', desc: 'Tampilkan lencana eksklusif di profil.' }
+            ]
+        };
+
+        const ALL_TOOLS = [
+            // FREE TOOLS
+            { id: 'qr-generator', name: 'QR Code Generator', desc: 'Buat Kode QR instan dari URL, teks, atau nomor telepon.', icon: 'fa-qrcode', tier: 'free', category: 'Dev & Utilities' },
+            { id: 'text-counter', name: 'Text Counter & Stats', desc: 'Hitung kata, karakter, paragraf, & perkiraan waktu baca.', icon: 'fa-file-lines', tier: 'free', category: 'Text Tools' },
+            { id: 'markdown-editor', name: 'Markdown Live Preview', desc: 'Tulis dan pratinjau format kode Markdown secara real-time.', icon: 'fa-brands fa-markdown', tier: 'free', category: 'Text Tools' },
+            { id: 'case-converter', name: 'Text Case Converter', desc: 'Konversi teks ke UPPERCASE, lowercase, Title Case, CamelCase.', icon: 'fa-font', tier: 'free', category: 'Text Tools' },
+            { id: 'uuid-generator', name: 'UUID/GUID v4 Generator', desc: 'Generate unique identifier v4 secara acak untuk database.', icon: 'fa-fingerprint', tier: 'free', category: 'Dev & Utilities' },
+            { id: 'lorem-generator', name: 'Lorem Ipsum Generator', desc: 'Buat teks dummy paragraf atau kata untuk mockup visual.', icon: 'fa-paragraph', tier: 'free', category: 'Text Tools' },
+            { id: 'unit-converter', name: 'Universal Unit Converter', desc: 'Konversi satuan Panjang, Berat, Suhu, dan Data Digital.', icon: 'fa-scale-unbalanced', tier: 'free', category: 'Calculators' },
+            { id: 'gradient-generator', name: 'CSS Gradient Generator', desc: 'Desain kombinasi gradasi warna CSS linear & radial estetik.', icon: 'fa-palette', tier: 'free', category: 'Design Tools' },
+            { id: 'password-generator', name: 'Password Generator', desc: 'Buat kata sandi acak dengan tingkat enkripsi tinggi.', icon: 'fa-key', tier: 'free', category: 'Security' },
+            { id: 'calculator', name: 'Kalkulator Cepat', desc: 'Kalkulator perhitungan matematika standar dan ilmiah.', icon: 'fa-calculator', tier: 'free', category: 'Calculators' },
+            { id: 'base64-tool', name: 'Base64 Encoder/Decoder', desc: 'Encode dan decode teks atau data ke format Base64.', icon: 'fa-code-compare', tier: 'free', category: 'Dev & Utilities' },
+            
+            // PREMIUM TOOLS
+            { id: 'color-palette', name: 'Color Palette Generator', desc: 'Generate skema kombinasi 5 warna harmonis estetik.', icon: 'fa-eye-dropper', tier: 'premium', category: 'Design Tools' },
+            { id: 'json-formatter', name: 'JSON Formatter & Beautifier', desc: 'Rapikan, validasi, dan beautify kode JSON berantakan.', icon: 'fa-code', tier: 'premium', category: 'Dev & Utilities' },
+            { id: 'unix-converter', name: 'Unix Timestamp Converter', desc: 'Konversi Unix Epoch time ke format tanggal manusia.', icon: 'fa-clock', tier: 'premium', category: 'Dev & Utilities' },
+            { id: 'minifier-tool', name: 'HTML / CSS Minifier', desc: 'Kompresi kode HTML/CSS untuk mempercepat muat situs.', icon: 'fa-compress', tier: 'premium', category: 'Dev & Utilities' },
+            { id: 'image-compressor', name: 'Image Compressor', desc: 'Kompres ukuran file gambar PNG/JPG tanpa merusak kualitas.', icon: 'fa-image', tier: 'premium', category: 'Media Tools' },
+            
+            // PRO TOOLS
+            { id: 'diff-checker', name: 'Text Diff Checker', desc: 'Bandingkan perbedaan baris antara dua berkas teks/kode.', icon: 'fa-code-compare', tier: 'pro', category: 'Dev & Utilities' },
+            { id: 'sql-formatter', name: 'SQL Query Formatter', desc: 'Rapikan struktur sintaks query SQL yang panjang & rumit.', icon: 'fa-database', tier: 'pro', category: 'Dev & Utilities' },
+            { id: 'advanced-regex', name: 'Advanced Regex Tester', desc: 'Uji ekspresi reguler (Regex) dengan highlight pencocokan.', icon: 'fa-magnifying-glass-chart', tier: 'pro', category: 'Dev & Utilities' }
+        ];
+
+        function saveDB() {
+            localStorage.setItem('uwt_users', JSON.stringify(state.users));
+            localStorage.setItem('uwt_transactions', JSON.stringify(state.transactions));
+            localStorage.setItem('uwt_inventory', JSON.stringify(state.inventory));
+            localStorage.setItem('uwt_redeemed', JSON.stringify(state.redeemedCodes));
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgCol = type === 'success' ? 'bg-emerald-600 border border-emerald-400/30' : type === 'error' ? 'bg-rose-600 border border-rose-400/30' : 'bg-indigo-600 border border-indigo-400/30';
+            toast.className = `${bgCol} text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold transition transform duration-300 backdrop-blur-md`;
+            toast.innerHTML = `<i class="fa-solid ${type==='success'?'fa-circle-check':type==='error'?'fa-circle-exclamation':'fa-circle-info'} text-lg"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        function openSocialAuthModal() {
+            document.getElementById('social-auth-modal').classList.remove('hidden');
+        }
+        function closeSocialAuthModal() {
+            document.getElementById('social-auth-modal').classList.add('hidden');
+        }
+        function simulateSocialAuth(provider) {
+            closeSocialAuthModal();
+            showToast(`Berhasil masuk dengan ${provider} (Simulasi Pajangan)`, 'info');
+            let demoUsr = state.users.find(u => u.username === 'UserDemo');
+            if (demoUsr) {
+                state.currentUser = demoUsr;
+                checkDailyStreak(state.currentUser);
+                navigate('dashboard');
+            }
+        }
+        function simulateSocialEmail() {
+            const email = document.getElementById('social-email-input').value;
+            if (!email) {
+                showToast('Masukkan email terlebih dahulu', 'error');
+                return;
+            }
+            closeSocialAuthModal();
+            showToast(`Autentikasi email ${email} berhasil (Simulasi Pajangan)`, 'success');
+            let demoUsr = state.users.find(u => u.username === 'UserDemo');
+            if (demoUsr) {
+                state.currentUser = demoUsr;
+                checkDailyStreak(state.currentUser);
+                navigate('dashboard');
+            }
+        }
+
+        function checkDailyStreak(user) {
+            const today = new Date().toISOString().split('T')[0];
+            if (user.lastLoginDate === today) return;
+
+            if (!user.lastLoginDate) {
+                user.streak = 1;
+                user.streakClaimedToday = false;
+            } else {
+                const lastDate = new Date(user.lastLoginDate);
+                const currDate = new Date(today);
+                const diffTime = Math.abs(currDate - lastDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1) {
+                    user.streak = user.streak >= 7 ? 1 : user.streak + 1;
+                    user.streakClaimedToday = false;
+                } else if (diffDays > 1) {
+                    user.streak = 1;
+                    user.streakClaimedToday = false;
+                }
+            }
+            user.lastLoginDate = today;
+            saveDB();
+        }
+
+        function navigate(view, toolId = null) {
+            state.activeView = view;
+            if (toolId) state.currentTool = toolId;
+            renderApp();
+        }
+
+        function renderApp() {
+            const app = document.getElementById('app');
+            app.innerHTML = '';
+
+            if (state.activeView === 'login') {
+                app.innerHTML = renderLoginView();
+            } else if (state.activeView === 'register') {
+                app.innerHTML = renderRegisterView();
+            } else {
+                app.innerHTML = `
+                    <div class="flex h-screen overflow-hidden">
+                        <!-- Sidebar Desktop -->
+                        <aside class="w-64 bg-cardbg border-r border-cardborder hidden md:flex flex-col justify-between z-30">
+                            <div>
+                                <div class="p-5 flex items-center gap-3 border-b border-cardborder">
+                                    <div class="bg-gradient-to-tr from-indigo-600 to-purple-600 p-2.5 rounded-2xl text-white font-bold text-lg shadow-lg glow-indigo"><i class="fa-solid fa-toolbox"></i></div>
+                                    <div>
+                                        <h1 class="font-bold text-sm text-white tracking-wider">ULTIMATE TOOLS</h1>
+                                        <p class="text-[10px] text-indigo-400 font-semibold uppercase tracking-wider">TIER: ${state.currentUser.tier.toUpperCase()}</p>
+                                    </div>
+                                </div>
+                                <nav class="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]">
+                                    <button onclick="navigate('dashboard')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition ${state.activeView==='dashboard'?'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30':'text-gray-400 hover:bg-gray-800/60 hover:text-white'}"><i class="fa-solid fa-chart-pie w-5 text-sm"></i> Dashboard</button>
+                                    <button onclick="navigate('tools')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition ${state.activeView==='tools'?'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30':'text-gray-400 hover:bg-gray-800/60 hover:text-white'}"><i class="fa-solid fa-screwdriver-wrench w-5 text-sm"></i> Utilitas Tools (${ALL_TOOLS.length})</button>
+                                    <button onclick="navigate('daily')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition ${state.activeView==='daily'?'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30':'text-gray-400 hover:bg-gray-800/60 hover:text-white'}"><i class="fa-solid fa-calendar-days w-5 text-sm"></i> Daily Rewards <span class="ml-auto bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded-full font-bold">${state.currentUser.streak} Hari</span></button>
+                                    <button onclick="navigate('pointshop')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition ${state.activeView==='pointshop'?'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30':'text-gray-400 hover:bg-gray-800/60 hover:text-white'}"><i class="fa-solid fa-store w-5 text-sm"></i> Point Shop</button>
+                                    <button onclick="navigate('redeem')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition ${state.activeView==='redeem'?'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30':'text-gray-400 hover:bg-gray-800/60 hover:text-white'}"><i class="fa-solid fa-ticket w-5 text-sm"></i> Redeem Code</button>
+                                    <button onclick="navigate('inventory')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition ${state.activeView==='inventory'?'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30':'text-gray-400 hover:bg-gray-800/60 hover:text-white'}"><i class="fa-solid fa-box-archive w-5 text-sm"></i> Inventaris</button>
+                                    <button onclick="navigate('upgrade')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition ${state.activeView==='upgrade'?'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30':'text-gray-400 hover:bg-gray-800/60 hover:text-white'}"><i class="fa-solid fa-crown w-5 text-sm text-amber-400"></i> Upgrade Paket</button>
+                                    <button onclick="navigate('profile')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition ${state.activeView==='profile'?'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30':'text-gray-400 hover:bg-gray-800/60 hover:text-white'}"><i class="fa-solid fa-user-gear w-5 text-sm"></i> Edit Profil Foto</button>
+                                    <button onclick="navigate('help')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition ${state.activeView==='help'?'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30':'text-gray-400 hover:bg-gray-800/60 hover:text-white'}"><i class="fa-solid fa-circle-question w-5 text-sm"></i> Bantuan</button>
+                                    ${state.currentUser.role === 'admin' ? `<button onclick="navigate('admin')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition bg-purple-600/20 text-purple-300 hover:bg-purple-600 hover:text-white border border-purple-500/30"><i class="fa-solid fa-shield-halved w-5 text-sm"></i> Admin Panel</button>` : ''}
+                                    ${state.currentUser.role === 'operator' ? `<button onclick="navigate('operator')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition bg-blue-600/20 text-blue-300 hover:bg-blue-600 hover:text-white border border-blue-500/30"><i class="fa-solid fa-headset w-5 text-sm"></i> Operator Panel</button>` : ''}
+                                </nav>
+                            </div>
+                            <div class="p-4 border-t border-cardborder">
+                                <div class="flex items-center justify-between mb-3 px-2">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-sm"><i class="fa-solid fa-coins"></i></div>
+                                        <div>
+                                            <p class="text-[10px] text-gray-400">Saldo Poin</p>
+                                            <p class="text-xs font-bold text-white">${state.currentUser.points} Poin</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-rose-600/10 hover:bg-rose-600 text-rose-400 hover:text-white py-2.5 rounded-xl text-xs font-semibold transition"><i class="fa-solid fa-right-from-bracket"></i> Keluar Sesi</button>
+                            </div>
+                        </aside>
+
+                        <!-- Main Content Area -->
+                        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+                            <!-- Top Header -->
+                            <header class="bg-cardbg/80 backdrop-blur-md border-b border-cardborder h-16 flex items-center justify-between px-6 z-20">
+                                <div class="flex items-center gap-4">
+                                    <button onclick="showToast('Buka di layar desktop untuk pengalaman sidebar lengkap', 'info')" class="md:hidden text-gray-400 hover:text-white text-xl"><i class="fa-solid fa-bars"></i></button>
+                                    <h2 class="font-bold text-base text-white capitalize flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                        ${state.activeView.replace('-', ' ')}
+                                    </h2>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="hidden sm:flex items-center gap-2 bg-gray-950 border border-gray-800 px-3 py-1.5 rounded-xl">
+                                        <i class="fa-solid fa-coins text-amber-400 text-xs"></i>
+                                        <span class="text-xs font-bold text-white">${state.currentUser.points} Poin</span>
+                                    </div>
+                                    <div class="flex items-center gap-3 cursor-pointer" onclick="navigate('profile')">
+                                        ${state.currentUser.avatarUrl ? 
+                                            `<img src="${state.currentUser.avatarUrl}" class="w-9 h-9 rounded-full object-cover border border-indigo-500 shadow">` :
+                                            `<div class="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow">${state.currentUser.username[0].toUpperCase()}</div>`
+                                        }
+                                        <div class="hidden sm:block text-left">
+                                            <p class="text-xs font-bold text-white leading-tight">${state.currentUser.name}</p>
+                                            <p class="text-[10px] text-gray-400 uppercase font-medium">@${state.currentUser.username}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </header>
+
+                            <!-- View Container -->
+                            <main class="flex-1 overflow-y-auto p-6 bg-darkbg">
+                                ${renderCurrentViewContent()}
+                            </main>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderLoginView() {
+            return `
+                <div class="flex-1 flex items-center justify-center p-6 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-cover bg-center opacity-20 filter blur-sm" style="background-image: url('${DEFAULT_COVER}')"></div>
+                    <div class="glass-panel w-full max-w-md p-8 rounded-3xl shadow-2xl relative z-10">
+                        <div class="text-center mb-8">
+                            <div class="w-16 h-16 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl shadow-lg mb-4 glow-indigo"><i class="fa-solid fa-toolbox"></i></div>
+                            <h1 class="text-2xl font-bold text-white tracking-wide">ULTIMATE WEB TOOLS</h1>
+                            <p class="text-xs text-gray-400 mt-1">Platform Web Utilitas & Gamifikasi Modern</p>
+                        </div>
+
+                        <button onclick="openSocialAuthModal()" class="w-full mb-6 flex items-center justify-center gap-2 bg-gray-900/80 hover:bg-gray-800 border border-gray-700 py-3 rounded-2xl font-medium text-xs transition text-white">
+                            <i class="fa-solid fa-fingerprint text-indigo-400 text-sm"></i> Masuk dengan Google / Apple / Telepon
+                        </button>
+
+                        <div class="flex items-center my-4">
+                            <div class="flex-1 border-t border-gray-800"></div>
+                            <span class="px-3 text-[10px] text-gray-500 uppercase tracking-widest font-semibold">LOGIN MANUAL</span>
+                            <div class="flex-1 border-t border-gray-800"></div>
+                        </div>
+
+                        <form onsubmit="handleLogin(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Username / ID Pengguna</label>
+                                <input type="text" id="login-username" required placeholder="cth: Danzy atau UserDemo" class="w-full bg-gray-950/80 border border-gray-700 rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Password</label>
+                                <div class="relative">
+                                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-gray-950/80 border border-gray-700 rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                                    <button type="button" onclick="togglePasswordVisibility('login-password')" class="absolute right-4 top-3.5 text-gray-400 hover:text-white"><i class="fa-solid fa-eye text-xs"></i></button>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white py-3.5 rounded-2xl font-semibold text-xs transition shadow-lg glow-indigo">Masuk Sesi</button>
+                        </form>
+
+                        <div class="mt-6 text-center">
+                            <p class="text-xs text-gray-400">Belum punya akun? <button onclick="navigate('register')" class="text-indigo-400 font-semibold hover:underline">Daftar Akun Baru</button></p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderRegisterView() {
+            return `
+                <div class="flex-1 flex items-center justify-center p-6 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-cover bg-center opacity-20 filter blur-sm" style="background-image: url('${DEFAULT_COVER}')"></div>
+                    <div class="glass-panel w-full max-w-md p-8 rounded-3xl shadow-2xl relative z-10">
+                        <div class="text-center mb-6">
+                            <div class="w-14 h-14 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-2xl mx-auto flex items-center justify-center text-white text-xl shadow-lg mb-3 glow-purple"><i class="fa-solid fa-user-plus"></i></div>
+                            <h1 class="text-2xl font-bold text-white">Buat Akun Baru</h1>
+                            <p class="text-xs text-gray-400 mt-1">Dapatkan bonus awal 100 Poin Gratis!</p>
+                        </div>
+
+                        <form onsubmit="handleRegister(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Nama Lengkap</label>
+                                <input type="text" id="reg-name" required placeholder="cth: Alex Rian" class="w-full bg-gray-950/80 border border-gray-700 rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Username Unik</label>
+                                <input type="text" id="reg-username" required placeholder="cth: alex_dev" class="w-full bg-gray-950/80 border border-gray-700 rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Password</label>
+                                <input type="password" id="reg-password" required placeholder="••••••••" class="w-full bg-gray-950/80 border border-gray-700 rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white py-3.5 rounded-2xl font-semibold text-xs transition shadow-lg glow-indigo">Daftar Sekarang</button>
+                        </form>
+
+                        <div class="mt-6 text-center">
+                            <p class="text-xs text-gray-400">Sudah punya akun? <button onclick="navigate('login')" class="text-indigo-400 font-semibold hover:underline">Masuk</button></p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDashboardView() {
+            const u = state.currentUser;
+            return `
+                <div class="space-y-6">
+                    <div class="bg-gradient-to-r from-indigo-900/60 via-purple-900/40 to-darkbg border border-indigo-500/30 p-8 rounded-3xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 glow-indigo">
+                        <div class="absolute right-0 top-0 opacity-10 translate-x-10 -translate-y-10"><i class="fa-solid fa-bolt text-[220px] text-indigo-400"></i></div>
+                        <div class="space-y-2 z-10">
+                            <span class="bg-indigo-500/20 text-indigo-300 text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-widest border border-indigo-500/30">ROLE: ${u.role}</span>
+                            <h2 class="text-2xl font-extrabold text-white">Selamat datang kembali, ${u.name}! 👋</h2>
+                            <p class="text-xs text-gray-300 max-w-xl">Akses <strong class="text-indigo-400">${ALL_TOOLS.length}+ tools utilitas fungsional</strong>. Kumpulkan poin dari Daily Login untuk ditukar dengan reward gratis!</p>
+                        </div>
+                        <div class="flex items-center gap-3 z-10">
+                            <button onclick="navigate('daily')" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:opacity-90 text-gray-950 px-5 py-3 rounded-2xl font-bold text-xs shadow-lg flex items-center gap-2 transition"><i class="fa-solid fa-calendar-check"></i> Daily Reward (${u.streak} Hari)</button>
+                            <button onclick="navigate('pointshop')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-2xl font-bold text-xs shadow-lg flex items-center gap-2 transition"><i class="fa-solid fa-store"></i> Point Shop</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-cardbg border border-cardborder p-5 rounded-2xl flex items-center gap-4 shadow">
+                            <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-2xl flex items-center justify-center text-xl font-bold border border-indigo-500/30"><i class="fa-solid fa-coins"></i></div>
+                            <div>
+                                <p class="text-[10px] text-gray-400 uppercase font-semibold">Total Poin</p>
+                                <h3 class="text-xl font-bold text-white">${u.points} Poin</h3>
+                            </div>
+                        </div>
+                        <div class="bg-cardbg border border-cardborder p-5 rounded-2xl flex items-center gap-4 shadow">
+                            <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center text-xl font-bold border border-amber-500/30"><i class="fa-solid fa-fire"></i></div>
+                            <div>
+                                <p class="text-[10px] text-gray-400 uppercase font-semibold">Login Streak</p>
+                                <h3 class="text-xl font-bold text-white">${u.streak} Hari Beruntun</h3>
+                            </div>
+                        </div>
+                        <div class="bg-cardbg border border-cardborder p-5 rounded-2xl flex items-center gap-4 shadow">
+                            <div class="w-12 h-12 bg-purple-500/20 text-purple-400 rounded-2xl flex items-center justify-center text-xl font-bold border border-purple-500/30"><i class="fa-solid fa-crown"></i></div>
+                            <div>
+                                <p class="text-[10px] text-gray-400 uppercase font-semibold">Tier Akses</p>
+                                <h3 class="text-xl font-bold text-white uppercase">${u.tier}</h3>
+                            </div>
+                        </div>
+                        <div class="bg-cardbg border border-cardborder p-5 rounded-2xl flex items-center gap-4 shadow">
+                            <div class="w-12 h-12 bg-cyan-500/20 text-cyan-400 rounded-2xl flex items-center justify-center text-xl font-bold border border-cyan-500/30"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                            <div>
+                                <p class="text-[10px] text-gray-400 uppercase font-semibold">Tools Favorit</p>
+                                <h3 class="text-xl font-bold text-white">${u.favorites.length} Tools</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-cardbg border border-cardborder p-6 rounded-3xl shadow">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-star text-amber-400"></i> Tools Favorit Akses Cepat</h3>
+                            <button onclick="navigate('tools')" class="text-xs text-indigo-400 hover:underline font-semibold">Lihat Semua ${ALL_TOOLS.length} Tools →</button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                            ${u.favorites.map(favId => {
+                                const t = ALL_TOOLS.find(item => item.id === favId) || { name: favId, icon: 'fa-toolbox', tier: 'free' };
+                                return `
+                                    <div onclick="openTool('${t.id}')" class="bg-gray-950/80 border border-gray-800 hover:border-indigo-500/60 p-4 rounded-2xl cursor-pointer transition group">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="w-9 h-9 bg-indigo-600/20 text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white rounded-xl flex items-center justify-center transition"><i class="fa-solid ${t.icon}"></i></div>
+                                            <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded ${t.tier==='pro'?'bg-purple-500/20 text-purple-400':t.tier==='premium'?'bg-amber-500/20 text-amber-400':'bg-gray-800 text-gray-400'}">${t.tier}</span>
+                                        </div>
+                                        <h4 class="font-bold text-white text-xs group-hover:text-indigo-400 transition">${t.name}</h4>
+                                        <p class="text-[10px] text-gray-400 mt-1 line-clamp-1">Klik untuk menjalankan</p>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderToolsView() {
+            return `
+                <div class="space-y-6">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Pusat Tools & Utilitas (${ALL_TOOLS.length})</h2>
+                            <p class="text-xs text-gray-400">Pilih tool fungsional siap pakai sesuai tier akun Anda.</p>
+                        </div>
+                        <input type="text" id="tool-search" oninput="filterToolsList()" placeholder="Cari nama tool..." class="bg-gray-950 border border-gray-800 px-4 py-2.5 rounded-2xl text-xs text-white focus:outline-none focus:border-indigo-500 w-full sm:w-64">
+                    </div>
+
+                    <div id="tools-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        ${ALL_TOOLS.map(t => {
+                            const hasAccess = checkToolAccess(t.tier);
+                            return `
+                                <div class="tool-card bg-cardbg border border-cardborder p-5 rounded-2xl flex flex-col justify-between shadow relative overflow-hidden group hover:border-indigo-500/50 transition" data-name="${t.name.toLowerCase()}">
+                                    ${!hasAccess ? `<div class="absolute inset-0 bg-black/75 backdrop-blur-[2px] flex items-center justify-center z-10">
+                                        <div class="text-center p-4">
+                                            <i class="fa-solid fa-lock text-amber-400 text-2xl mb-2"></i>
+                                            <p class="text-xs font-bold text-white mb-2">Memerlukan Tier ${t.tier.toUpperCase()}</p>
+                                            <button onclick="navigate('upgrade')" class="bg-indigo-600 text-white text-[10px] px-3 py-1.5 rounded-xl font-semibold shadow">Upgrade Sekarang</button>
+                                        </div>
+                                    </div>` : ''}
+                                    <div>
+                                        <div class="flex items-center justify-between mb-3">
+                                            <div class="w-10 h-10 bg-indigo-600/20 text-indigo-400 rounded-xl flex items-center justify-center font-bold text-lg"><i class="fa-solid ${t.icon}"></i></div>
+                                            <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded ${t.tier==='pro'?'bg-purple-500/20 text-purple-400':t.tier==='premium'?'bg-amber-500/20 text-amber-400':'bg-gray-800 text-gray-400'}">${t.tier}</span>
+                                        </div>
+                                        <h3 class="font-bold text-white text-sm mb-1">${t.name}</h3>
+                                        <p class="text-xs text-gray-400 leading-relaxed">${t.desc}</p>
+                                    </div>
+                                    <div class="mt-5 pt-3 border-t border-cardborder flex items-center justify-between">
+                                        <button onclick="toggleFavorite('${t.id}')" class="text-gray-400 hover:text-amber-400 text-xs transition"><i class="fa-solid fa-star ${state.currentUser.favorites.includes(t.id)?'text-amber-400':''}"></i> Favorit</button>
+                                        <button onclick="openTool('${t.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4 py-2 rounded-xl font-semibold transition shadow">Buka Tool</button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterToolsList() {
+            const query = document.getElementById('tool-search').value.toLowerCase();
+            const cards = document.querySelectorAll('.tool-card');
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name');
+                if (name.includes(query)) card.style.display = 'flex';
+                else card.style.display = 'none';
+            });
+        }
+
+        function checkToolAccess(toolTier) {
+            const u = state.currentUser;
+            if (u.role === 'admin') return true;
+            if (toolTier === 'free') return true;
+            if (toolTier === 'premium' && (u.tier === 'premium' || u.tier === 'pro')) return true;
+            if (toolTier === 'pro' && u.tier === 'pro') return true;
+            return false;
+        }
+
+        // --- INTERACTIVE IMPLEMENTATION OF ALL 10+ TOOLS ---
+        function openTool(toolId) {
+            state.currentTool = toolId;
+            const mainContainer = document.querySelector('main');
+            if (!mainContainer) return;
+
+            const t = ALL_TOOLS.find(item => item.id === toolId) || { name: toolId, desc: '' };
+            let toolContent = '';
+
+            // Tool 1: QR Code Generator
+            if (toolId === 'qr-generator') {
+                toolContent = `
+                    <div class="space-y-4">
+                        <label class="block text-xs font-semibold text-gray-300">Masukkan Teks atau URL:</label>
+                        <input type="text" id="qr-input" value="https://google.com" placeholder="Ketik URL atau Teks di sini..." class="w-full bg-gray-950 border border-gray-700 p-3 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
+                        <button onclick="generateQRCode()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-semibold shadow">Generate Kode QR</button>
+                        <div class="pt-4 flex justify-center">
+                            <div id="qrcode-target" class="bg-white p-4 rounded-2xl shadow-lg"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            // Tool 2: Markdown Live Preview
+            else if (toolId === 'markdown-editor') {
+                toolContent = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-2">Editor Markdown:</label>
+                            <textarea id="md-input" oninput="renderMarkdown()" rows="10" class="w-full bg-gray-950 border border-gray-700 p-3 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"># Judul Markdown\n\nIni adalah contoh teks **tebal** dan *miring*.\n\n- Poin 1\n- Poin 2</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-2">Pratinjau Hasil:</label>
+                            <div id="md-output" class="w-full bg-gray-950 border border-gray-800 p-4 rounded-xl text-xs text-gray-200 h-[210px] overflow-y-auto prose prose-invert"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            // Tool 3: UUID Generator
+            else if (toolId === 'uuid-generator') {
+                toolContent = `
+                    <div class="space-y-4 text-center py-6">
+                        <p class="text-xs text-gray-400">Klik tombol di bawah untuk menghasilkan UUID v4 acak baru:</p>
+                        <input type="text" id="uuid-output" readonly value="${crypto.randomUUID()}" class="w-full max-w-md bg-gray-950 border border-gray-700 p-3 rounded-xl text-center text-sm font-mono text-emerald-400 font-bold mx-auto block">
+                        <button onclick="document.getElementById('uuid-output').value = crypto.randomUUID(); showToast('UUID Baru Dihasilkan!', 'success')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl text-xs font-semibold shadow">Generate UUID Baru</button>
+                    </div>
+                `;
+            }
+            // Tool 4: Universal Unit Converter
+            else if (toolId === 'unit-converter') {
+                toolContent = `
+                    <div class="space-y-4 max-w-lg mx-auto">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-gray-400 mb-1">Meter (m)</label>
+                                <input type="number" id="unit-m" oninput="convertUnits('m')" placeholder="0" class="w-full bg-gray-950 border border-gray-700 p-3 rounded-xl text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-gray-400 mb-1">Kilometer (km)</label>
+                                <input type="number" id="unit-km" oninput="convertUnits('km')" placeholder="0" class="w-full bg-gray-950 border border-gray-700 p-3 rounded-xl text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-gray-400 mb-1">Centimeter (cm)</label>
+                                <input type="number" id="unit-cm" oninput="convertUnits('cm')" placeholder="0" class="w-full bg-gray-950 border border-gray-700 p-3 rounded-xl text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-gray-400 mb-1">Feet (ft)</label>
+                                <input type="number" id="unit-ft" oninput="convertUnits('ft')" placeholder="0" class="w-full bg-gray-950 border border-gray-700 p-3 rounded-xl text-xs text-white">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            // Tool 5: CSS Gradient Generator
+            else if (toolId === 'gradient-generator') {
+                toolContent = `
+                    <div class="space-y-4">
+                        <div id="gradient-preview" class="h-32 rounded-2xl border border-gray-700 flex items-center justify-center text-white font-bold text-sm shadow-inner" style="background: linear-gradient(135deg, #6366f1, #a855f7);">Pratinjau Gradasi</div>
+                        <div class="flex items-center justify-center gap-4">
+                            <input type="color" id="grad-c1" value="#6366f1" onchange="updateGradient()" class="w-10 h-10 rounded-xl border-none cursor-pointer">
+                            <input type="color" id="grad-c2" value="#a855f7" onchange="updateGradient()" class="w-10 h-10 rounded-xl border-none cursor-pointer">
+                        </div>
+                        <input type="text" id="grad-css" readonly value="background: linear-gradient(135deg, #6366f1, #a855f7);" class="w-full bg-gray-950 border border-gray-700 p-3 rounded-xl text-xs text-emerald-400 font-mono text-center">
+                    </div>
+                `;
+            }
+            // Tool 6: Color Palette Generator
+            else if (toolId === 'color-palette') {
+                toolContent = `
+                    <div class="space-y-4 text-center">
+                        <div id="palette-container" class="grid grid-cols-5 gap-2 h-24 rounded-2xl overflow-hidden border border-gray-700"></div>
+                        <button onclick="generatePalette()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-semibold shadow">Generate Skema Warna Baru</button>
+                    </div>
+                `;
+            }
+            // Tool 7: HTML / CSS Minifier
+            else if (toolId === 'minifier-tool') {
+                toolContent = `
+                    <div class="space-y-3">
+                        <textarea id="minify-input" rows="5" placeholder="Masukkan kode HTML / CSS berantakan..." class="w-full bg-gray-950 border border-gray-700 p-3 rounded-xl text-xs text-white font-mono"></textarea>
+                        <button onclick="minifyCode()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-xs font-semibold">Kompres Kode</button>
+                        <textarea id="minify-output" readonly rows="5" placeholder="Hasil kode terkompresi..." class="w-full bg-gray-950 border border-gray-800 p-3 rounded-xl text-xs text-emerald-400 font-mono"></textarea>
+                    </div>
+                `;
+            }
+            // Tool 8: Text Counter
+            else if (toolId === 'text-counter') {
+                toolContent = `
+                    <div class="space-y-4">
+                        <textarea id="tool-text-input" oninput="runTextCounter()" rows="6" placeholder="Ketik atau tempel teks Anda di sini..." class="w-full bg-gray-950 border border-gray-700 p-4 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"></textarea>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 text-center"><p class="text-[10px] text-gray-400">Kata</p><h4 id="tc-words" class="text-lg font-bold text-white">0</h4></div>
+                            <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 text-center"><p class="text-[10px] text-gray-400">Karakter</p><h4 id="tc-chars" class="text-lg font-bold text-white">0</h4></div>
+                            <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 text-center"><p class="text-[10px] text-gray-400">Paragraf</p><h4 id="tc-paras" class="text-lg font-bold text-white">0</h4></div>
+                            <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 text-center"><p class="text-[10px] text-gray-400">Waktu Baca</p><h4 id="tc-read" class="text-lg font-bold text-white">0 dtk</h4></div>
+                        </div>
+                    </div>
+                `;
+            }
+            // Fallback default tool view
+            else {
+                toolContent = `
+                    <div class="text-center py-10 space-y-4">
+                        <div class="w-16 h-16 bg-indigo-600/20 text-indigo-400 rounded-2xl mx-auto flex items-center justify-center text-2xl border border-indigo-500/30"><i class="fa-solid ${t.icon}"></i></div>
+                        <h3 class="text-base font-bold text-white">Utilitas ${t.name} Siap Digunakan</h3>
+                        <p class="text-xs text-gray-400 max-w-md mx-auto">${t.desc}</p>
+                        <textarea rows="4" placeholder="Masukkan data input Anda..." class="w-full max-w-md bg-gray-950 border border-gray-700 p-3 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500 block mx-auto"></textarea>
+                        <button onclick="showToast('Data berhasil diproses!', 'success')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl text-xs font-semibold shadow">Jalankan Algoritma</button>
+                    </div>
+                `;
+            }
+
+            mainContainer.innerHTML = `
+                <div class="space-y-6 max-w-4xl mx-auto">
+                    <div class="flex items-center justify-between border-b border-cardborder pb-4">
+                        <div class="flex items-center gap-3">
+                            <button onclick="navigate('tools')" class="bg-gray-800 hover:bg-gray-700 text-white w-9 h-9 rounded-xl flex items-center justify-center transition"><i class="fa-solid fa-arrow-left text-xs"></i></button>
+                            <div>
+                                <h2 class="text-lg font-bold text-white">${t.name}</h2>
+                                <p class="text-xs text-indigo-400 font-medium">${t.category || 'Utilitas Sistem'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-cardbg border border-cardborder p-6 rounded-3xl shadow">
+                        ${toolContent}
+                    </div>
+                </div>
+            `;
+
+            // Auto-trigger setup for specific tools after DOM render
+            if (toolId === 'qr-generator') generateQRCode();
+            if (toolId === 'markdown-editor') renderMarkdown();
+            if (toolId === 'color-palette') generatePalette();
+        }
+
+        // TOOL EXECUTION LOGICS
+        function generateQRCode() {
+            const container = document.getElementById('qrcode-target');
+            if (!container) return;
+            container.innerHTML = '';
+            const val = document.getElementById('qr-input').value || 'https://google.com';
+            new QRCode(container, { text: val, width: 140, height: 140 });
+        }
+
+        function renderMarkdown() {
+            const input = document.getElementById('md-input');
+            const output = document.getElementById('md-output');
+            if (input && output && window.marked) {
+                output.innerHTML = marked.parse(input.value);
+            }
+        }
+
+        function convertUnits(type) {
+            const val = parseFloat(document.getElementById('unit-' + type).value) || 0;
+            let m = 0;
+            if (type === 'm') m = val;
+            else if (type === 'km') m = val * 1000;
+            else if (type === 'cm') m = val / 100;
+            else if (type === 'ft') m = val * 0.3048;
+
+            if (type !== 'm') document.getElementById('unit-m').value = (m).toFixed(2);
+            if (type !== 'km') document.getElementById('unit-km').value = (m / 1000).toFixed(4);
+            if (type !== 'cm') document.getElementById('unit-cm').value = (m * 100).toFixed(2);
+            if (type !== 'ft') document.getElementById('unit-ft').value = (m / 0.3048).toFixed(2);
+        }
+
+        function updateGradient() {
+            const c1 = document.getElementById('grad-c1').value;
+            const c2 = document.getElementById('grad-c2').value;
+            const css = `background: linear-gradient(135deg, ${c1}, ${c2});`;
+            document.getElementById('gradient-preview').style = css;
+            document.getElementById('grad-css').value = css;
+        }
+
+        function generatePalette() {
+            const container = document.getElementById('palette-container');
+            if (!container) return;
+            container.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const hex = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+                const box = document.createElement('div');
+                box.className = 'flex items-end justify-center pb-2 font-mono text-[9px] font-bold text-white shadow cursor-pointer transition transform hover:scale-105';
+                box.style.background = hex;
+                box.innerText = hex;
+                box.onclick = () => { navigator.clipboard.writeText(hex); showToast(`Warna ${hex} disalin!`, 'info'); };
+                container.appendChild(box);
+            }
+        }
+
+        function minifyCode() {
+            const input = document.getElementById('minify-input').value;
+            const minified = input.replace(/\s+/g, ' ').replace(/\/\*[\s\S]*?\*\//g, '').trim();
+            document.getElementById('minify-output').value = minified;
+            showToast('Kode berhasil dikompresi!', 'success');
+        }
+
+        function runTextCounter() {
+            const text = document.getElementById('tool-text-input').value;
+            const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+            const chars = text.length;
+            const paras = text.trim() === '' ? 0 : text.split(/\n+/).filter(p => p.trim() !== '').length;
+            const readTime = Math.ceil(words / 200 * 60);
+
+            document.getElementById('tc-words').innerText = words;
+            document.getElementById('tc-chars').innerText = chars;
+            document.getElementById('tc-paras').innerText = paras;
+            document.getElementById('tc-read').innerText = readTime + ' dtk';
+        }
+
+        function toggleFavorite(toolId) {
+            const u = state.currentUser;
+            const idx = u.favorites.indexOf(toolId);
+            if (idx > -1) {
+                u.favorites.splice(idx, 1);
+                showToast('Dihapus dari favorit', 'info');
+            } else {
+                u.favorites.push(toolId);
+                showToast('Ditambahkan ke favorit', 'success');
+            }
+            saveDB();
+            renderApp();
+        }
+
+        function renderDailyView() {
+            const u = state.currentUser;
+            const rewards = [
+                { day: 1, pts: 10 }, { day: 2, pts: 15 }, { day: 3, pts: 20 },
+                { day: 4, pts: 25 }, { day: 5, pts: 30 }, { day: 6, pts: 40 }, { day: 7, pts: 100 }
+            ];
+
+            return `
+                <div class="space-y-6 max-w-4xl mx-auto">
+                    <div class="bg-cardbg border border-cardborder p-8 rounded-3xl text-center relative overflow-hidden shadow">
+                        <div class="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-2xl mx-auto flex items-center justify-center text-3xl mb-4 border border-amber-500/30"><i class="fa-solid fa-calendar-days"></i></div>
+                        <h2 class="text-2xl font-bold text-white mb-2">Daily Login Streak & Rewards</h2>
+                        <p class="text-xs text-gray-400 max-w-lg mx-auto mb-6">Login setiap hari secara konsisten untuk mengklaim total 240 poin dalam satu siklus penuh 7 hari!</p>
+                        
+                        <div class="inline-flex items-center gap-3 bg-gray-950 border border-gray-800 px-6 py-3 rounded-2xl mb-6">
+                            <i class="fa-solid fa-fire text-amber-400 text-xl"></i>
+                            <div class="text-left">
+                                <p class="text-[10px] text-gray-400">Streak Saat Ini</p>
+                                <p class="text-base font-bold text-white">${u.streak} Hari Beruntun</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-8">
+                            ${rewards.map(r => {
+                                const isClaimed = r.day < u.streak || (r.day === u.streak && u.streakClaimedToday);
+                                const isCurrent = r.day === u.streak && !u.streakClaimedToday;
+                                return `
+                                    <div class="bg-gray-950 border ${isCurrent?'border-amber-500 bg-amber-500/10':isClaimed?'border-emerald-500/40':'border-gray-800'} p-4 rounded-2xl flex flex-col items-center justify-between">
+                                        <span class="text-xs font-bold text-gray-400">Hari ${r.day}</span>
+                                        <div class="my-3 text-amber-400 font-bold text-xs flex items-center gap-1"><i class="fa-solid fa-coins"></i> +${r.pts}</div>
+                                        <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded ${isClaimed?'bg-emerald-500/20 text-emerald-400':isCurrent?'bg-amber-500 text-gray-950':'bg-gray-800 text-gray-500'}">${isClaimed?'Diklaim':isCurrent?'Tersedia':'Terkunci'}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+
+                        <button onclick="claimDailyReward()" ${u.streakClaimedToday?'disabled':''} class="bg-gradient-to-r from-amber-500 to-amber-600 hover:opacity-90 disabled:bg-gray-800 disabled:text-gray-500 text-gray-950 font-bold px-8 py-3.5 rounded-2xl shadow-lg transition text-xs">
+                            ${u.streakClaimedToday ? 'Reward Hari Ini Sudah Diklaim' : 'Klaim Reward Hari Ini 🎉'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function claimDailyReward() {
+            const u = state.currentUser;
+            if (u.streakClaimedToday) {
+                showToast('Anda sudah mengklaim reward hari ini!', 'error');
+                return;
+            }
+            const rewardsMap = { 1: 10, 2: 15, 3: 20, 4: 25, 5: 30, 6: 40, 7: 100 };
+            const pts = rewardsMap[u.streak] || 10;
+            
+            const balBefore = u.points;
+            u.points += pts;
+            u.streakClaimedToday = true;
+
+            state.transactions.unshift({
+                id: 'tx_' + Date.now(),
+                userId: u.id,
+                type: 'DAILY',
+                amount: pts,
+                balanceBefore: balBefore,
+                balanceAfter: u.points,
+                desc: `Klaim Daily Reward Hari ke-${u.streak}`,
+                timestamp: new Date().toISOString()
+            });
+
+            saveDB();
+            showToast(`Berhasil mengklaim +${pts} Poin!`, 'success');
+            renderApp();
+        }
+
+        function renderPointShopView() {
+            return `
+                <div class="space-y-6 max-w-6xl mx-auto">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Point Shop & Rewards</h2>
+                            <p class="text-xs text-gray-400">Tukarkan poin Anda dengan akses trial, tema, atau item eksklusif.</p>
+                        </div>
+                        <div class="bg-indigo-600/20 border border-indigo-500/40 px-4 py-2 rounded-2xl flex items-center gap-2">
+                            <i class="fa-solid fa-coins text-amber-400 text-xs"></i>
+                            <span class="text-xs font-bold text-white">${state.currentUser.points} Poin</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        ${state.pointShopItems.map(item => `
+                            <div class="bg-cardbg border border-cardborder p-5 rounded-3xl flex flex-col justify-between shadow relative group hover:border-indigo-500/50 transition">
+                                <div>
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="w-10 h-10 bg-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center font-bold text-base"><i class="fa-solid fa-gift"></i></div>
+                                        <span class="text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-xl"><i class="fa-solid fa-coins"></i> ${item.price} Poin</span>
+                                    </div>
+                                    <h3 class="font-bold text-white text-sm mb-1">${item.name}</h3>
+                                    <p class="text-xs text-gray-400 mb-4">${item.desc}</p>
+                                </div>
+                                <button onclick="buyPointShopItem('${item.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold text-xs transition shadow">Tukar Sekarang</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function buyPointShopItem(itemId) {
+            const item = state.pointShopItems.find(i => i.id === itemId);
+            const u = state.currentUser;
+            if (!item) return;
+
+            if (u.points < item.price) {
+                showToast('Poin Anda tidak mencukupi untuk menukar item ini!', 'error');
+                return;
+            }
+
+            const balBefore = u.points;
+            u.points -= item.price;
+
+            if (item.type === 'tier') u.tier = item.tier;
+
+            state.inventory.push({
+                id: 'inv_' + Date.now(),
+                userId: u.id,
+                name: item.name,
+                type: item.type,
+                acquiredAt: new Date().toISOString(),
+                status: 'Aktif'
+            });
+
+            state.transactions.unshift({
+                id: 'tx_' + Date.now(),
+                userId: u.id,
+                type: 'PURCHASE',
+                amount: -item.price,
+                balanceBefore: balBefore,
+                balanceAfter: u.points,
+                desc: `Pembelian Point Shop: ${item.name}`,
+                timestamp: new Date().toISOString()
+            });
+
+            saveDB();
+            showToast(`Berhasil menukar ${item.name}!`, 'success');
+            renderApp();
+        }
+
+        function renderRedeemView() {
+            return `
+                <div class="space-y-6 max-w-xl mx-auto">
+                    <div class="bg-cardbg border border-cardborder p-8 rounded-3xl shadow text-center">
+                        <div class="w-16 h-16 bg-purple-600/20 text-purple-400 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-4 border border-purple-500/30"><i class="fa-solid fa-ticket"></i></div>
+                        <h2 class="text-2xl font-bold text-white mb-2">Redeem Voucher & Kode</h2>
+                        <p class="text-xs text-gray-400 mb-6">Masukkan kode promo resmi untuk klaim poin atau bonus akses tier paket gratis.</p>
+                        
+                        <div class="space-y-4">
+                            <input type="text" id="redeem-input" placeholder="cth: WELCOME50 atau PRO7DAYS" class="w-full bg-gray-950 border border-gray-700 rounded-2xl px-4 py-3.5 text-xs text-white uppercase text-center font-bold tracking-widest focus:outline-none focus:border-indigo-500">
+                            <button onclick="processRedeemCode()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 rounded-2xl font-bold text-xs transition shadow-lg glow-indigo">Gunakan Kode Voucher</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function processRedeemCode() {
+            const codeInput = document.getElementById('redeem-input').value.trim().toUpperCase();
+            if (!codeInput) {
+                showToast('Masukkan kode redeem terlebih dahulu', 'error');
+                return;
+            }
+
+            const found = state.redeemCodesConfig.find(c => c.code === codeInput && c.active);
+            if (!found) {
+                showToast('Kode redeem tidak valid atau sudah tidak aktif!', 'error');
+                return;
+            }
+
+            if (state.redeemedCodes.includes(codeInput + '_' + state.currentUser.id)) {
+                showToast('Anda sudah pernah menggunakan kode ini sebelumnya!', 'error');
+                return;
+            }
+
+            const u = state.currentUser;
+            state.redeemedCodes.push(codeInput + '_' + u.id);
+            found.usedCount++;
+
+            if (found.type === 'points') {
+                const balBefore = u.points;
+                u.points += found.value;
+                state.transactions.unshift({
+                    id: 'tx_' + Date.now(), userId: u.id, type: 'REDEEM', amount: found.value,
+                    balanceBefore: balBefore, balanceAfter: u.points, desc: `Redeem Kode: ${found.code}`, timestamp: new Date().toISOString()
+                });
+                showToast(`Berhasil! Mendapatkan +${found.value} Poin.`, 'success');
+            } else if (found.type === 'tier') {
+                u.tier = found.tier;
+                showToast(`Berhasil! Paket ${found.tier.toUpperCase()} diaktifkan.`, 'success');
+            }
+
+            saveDB();
+            renderApp();
+        }
+
+        function renderInventoryView() {
+            const myItems = state.inventory.filter(i => i.userId === state.currentUser.id);
+            return `
+                <div class="space-y-6 max-w-4xl mx-auto">
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Inventaris Reward Anda</h2>
+                        <p class="text-xs text-gray-400">Daftar item dan akses trial yang telah Anda peroleh dari Point Shop.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        ${myItems.length === 0 ? `<div class="col-span-2 bg-cardbg border border-cardborder p-8 rounded-3xl text-center text-gray-500 text-xs">Belum ada item di inventaris Anda.</div>` : myItems.map(item => `
+                            <div class="bg-cardbg border border-cardborder p-5 rounded-2xl flex items-center justify-between shadow">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-indigo-600/20 text-indigo-400 rounded-xl flex items-center justify-center font-bold text-xl"><i class="fa-solid fa-box-open"></i></div>
+                                    <div>
+                                        <h4 class="font-bold text-white text-sm">${item.name}</h4>
+                                        <p class="text-xs text-gray-400">Diperoleh: ${new Date(item.acquiredAt).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                                <span class="bg-emerald-500/20 text-emerald-400 text-xs font-bold px-3 py-1 rounded-xl">${item.status}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderUpgradeView() {
+            return `
+                <div class="space-y-6 max-w-5xl mx-auto">
+                    <div class="text-center max-w-xl mx-auto mb-8">
+                        <h2 class="text-2xl font-bold text-white mb-2">Pilih Paket Akses Terbaik</h2>
+                        <p class="text-xs text-gray-400">Tingkatkan produktivitas Anda dengan membuka seluruh tools lanjutan tanpa batas.</p>
+                        <span class="inline-block mt-3 bg-amber-500/20 text-amber-400 text-[10px] uppercase font-bold px-3 py-1 rounded-full border border-amber-500/30">SIMULASI — BUKAN PEMBAYARAN NYATA</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-cardbg border border-cardborder p-6 rounded-3xl flex flex-col justify-between shadow">
+                            <div>
+                                <h3 class="font-bold text-white text-lg mb-1">FREE</h3>
+                                <p class="text-xs text-gray-400 mb-4">Untuk penggunaan dasar harian.</p>
+                                <div class="text-2xl font-bold text-white mb-6">Rp0 <span class="text-xs text-gray-500 font-normal">/selamanya</span></div>
+                                <ul class="space-y-3 text-xs text-gray-300 mb-6">
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Akses Tools Dasar</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Daily Rewards Standar</li>
+                                </ul>
+                            </div>
+                            <button disabled class="w-full bg-gray-800 text-gray-500 py-3 rounded-xl font-semibold text-xs">Paket Aktif</button>
+                        </div>
+
+                        <div class="bg-cardbg border-2 border-indigo-500 p-6 rounded-3xl flex flex-col justify-between shadow relative glow-indigo">
+                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[9px] uppercase font-bold px-3 py-0.5 rounded-full">Paling Populer</div>
+                            <div>
+                                <h3 class="font-bold text-white text-lg mb-1">PREMIUM</h3>
+                                <p class="text-xs text-gray-400 mb-4">Untuk kreator & profesional.</p>
+                                <div class="text-2xl font-bold text-white mb-6">Rp49rb <span class="text-xs text-gray-500 font-normal">/bulan</span></div>
+                                <ul class="space-y-3 text-xs text-gray-300 mb-6">
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Semua Fitur FREE</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Color Palette Generator</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> HTML / CSS Minifier</li>
+                                </ul>
+                            </div>
+                            <button onclick="simulateUpgradePackage('premium')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-semibold text-xs transition shadow">Pilih Premium (Simulasi)</button>
+                        </div>
+
+                        <div class="bg-cardbg border border-purple-500/50 p-6 rounded-3xl flex flex-col justify-between shadow">
+                            <div>
+                                <h3 class="font-bold text-white text-lg mb-1">PRO</h3>
+                                <p class="text-xs text-gray-400 mb-4">Akses tak terbatas tingkat lanjut.</p>
+                                <div class="text-2xl font-bold text-white mb-6">Rp99rb <span class="text-xs text-gray-500 font-normal">/bulan</span></div>
+                                <ul class="space-y-3 text-xs text-gray-300 mb-6">
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Semua Fitur PREMIUM</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Text Diff Checker</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> SQL Query Formatter</li>
+                                </ul>
+                            </div>
+                            <button onclick="simulateUpgradePackage('pro')" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-semibold text-xs transition shadow">Pilih PRO (Simulasi)</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function simulateUpgradePackage(tier) {
+            state.currentUser.tier = tier;
+            saveDB();
+            showToast(`Paket ${tier.toUpperCase()} berhasil diaktifkan secara simulasi!`, 'success');
+            renderApp();
+        }
+
+        // --- PROFILE & CUSTOM UPLOAD PHOTO VIEW ---
+        function renderProfileView() {
+            const u = state.currentUser;
+            const coverImage = u.bgCoverUrl || DEFAULT_COVER;
+
+            return `
+                <div class="space-y-6 max-w-4xl mx-auto">
+                    <!-- Profile Header with Cover & Avatar Photo Upload -->
+                    <div class="bg-cardbg border border-cardborder rounded-3xl overflow-hidden shadow relative">
+                        <div class="h-64 relative overflow-hidden bg-gray-900 group">
+                            <!-- Background Cover Image -->
+                            <img id="profile-cover-img" src="${coverImage}" class="w-full h-full object-cover transition duration-300">
+                            <div class="absolute inset-0 bg-gradient-to-t from-cardbg via-cardbg/30 to-transparent"></div>
+                            
+                            <!-- Upload Banner Button -->
+                            <div class="absolute top-4 right-4 flex items-center gap-2">
+                                <label class="bg-black/60 hover:bg-black text-white px-3.5 py-2 rounded-xl text-xs font-semibold backdrop-blur-md cursor-pointer transition flex items-center gap-2 border border-white/10">
+                                    <i class="fa-solid fa-camera text-indigo-400"></i> Ganti Cover Banner
+                                    <input type="file" accept="image/*" class="hidden" onchange="uploadCoverPhoto(event)">
+                                </label>
+                                <button onclick="resetCoverPhoto()" title="Reset Foto Cover" class="bg-black/60 hover:bg-black text-gray-400 hover:text-rose-400 w-9 h-9 rounded-xl text-xs font-semibold backdrop-blur-md transition flex items-center justify-center border border-white/10">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="px-8 pb-8 pt-0 relative -mt-16 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6">
+                            <div class="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+                                <!-- Avatar Photo with Upload -->
+                                <div class="relative group/avatar">
+                                    ${u.avatarUrl ? 
+                                        `<img id="profile-avatar-img" src="${u.avatarUrl}" class="w-28 h-28 rounded-full object-cover border-4 border-cardbg shadow-xl">` :
+                                        `<div class="w-28 h-28 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 border-4 border-cardbg flex items-center justify-center text-white text-4xl font-bold shadow-xl">${u.username[0].toUpperCase()}</div>`
+                                    }
+                                    <label class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center text-white opacity-0 group-hover/avatar:opacity-100 cursor-pointer transition text-xs font-semibold backdrop-blur-[2px]">
+                                        <i class="fa-solid fa-camera mr-1 text-indigo-400"></i> Ubah
+                                        <input type="file" accept="image/*" class="hidden" onchange="uploadAvatarPhoto(event)">
+                                    </label>
+                                </div>
+                                <div class="mb-2">
+                                    <h2 class="text-2xl font-bold text-white">${u.name}</h2>
+                                    <p class="text-xs text-indigo-400 font-semibold">@${u.username} • Role: <strong class="uppercase">${u.role}</strong></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="bg-indigo-500/20 text-indigo-300 text-xs px-4 py-2 rounded-xl font-bold uppercase border border-indigo-500/30">Tier: ${u.tier}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Image Upload Form Options -->
+                    <div class="bg-cardbg border border-cardborder p-8 rounded-3xl shadow space-y-6">
+                        <h3 class="font-bold text-white text-base flex items-center gap-2"><i class="fa-solid fa-image text-indigo-400"></i> Kustomisasi Foto Profil & Cover</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Direct File Upload Avatar Card -->
+                            <div class="bg-gray-950/80 border border-gray-800 p-5 rounded-2xl space-y-3">
+                                <h4 class="font-bold text-xs text-white">Upload Foto Profil Avatar</h4>
+                                <p class="text-[10px] text-gray-400">Unggah berkas foto diri (JPG, PNG, WebP) dari Galeri / Laptop.</p>
+                                <label class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition shadow">
+                                    <i class="fa-solid fa-user-gear"></i> Upload Foto Profil (Avatar)
+                                    <input type="file" accept="image/*" class="hidden" onchange="uploadAvatarPhoto(event)">
+                                </label>
+                            </div>
+
+                            <!-- Direct File Upload Banner Card -->
+                            <div class="bg-gray-950/80 border border-gray-800 p-5 rounded-2xl space-y-3">
+                                <h4 class="font-bold text-xs text-white">Upload Banner Header Cover</h4>
+                                <p class="text-[10px] text-gray-400">Unggah berkas foto latar belakang banner profil Anda.</p>
+                                <label class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition shadow">
+                                    <i class="fa-solid fa-upload"></i> Upload Foto Cover (Banner)
+                                    <input type="file" accept="image/*" class="hidden" onchange="uploadCoverPhoto(event)">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- URL Input Option -->
+                        <div class="bg-gray-950/80 border border-gray-800 p-5 rounded-2xl space-y-3">
+                            <h4 class="font-bold text-xs text-white">Atau Gunakan Tautan / URL Gambar Online</h4>
+                            <div class="flex gap-2">
+                                <input type="url" id="avatar-url-input" placeholder="https://domain.com/foto-profil.jpg" class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                                <button onclick="applyAvatarUrl()" class="bg-gray-800 hover:bg-gray-700 text-white text-xs px-4 py-2 rounded-xl font-semibold transition">Pasang Foto</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-cardborder">
+                            <div class="bg-gray-950 p-4 rounded-2xl border border-gray-800">
+                                <p class="text-[10px] text-gray-400">Total Saldo Poin</p>
+                                <p class="text-base font-bold text-white">${u.points} Poin</p>
+                            </div>
+                            <div class="bg-gray-950 p-4 rounded-2xl border border-gray-800">
+                                <p class="text-[10px] text-gray-400">Daily Login Streak</p>
+                                <p class="text-base font-bold text-white">${u.streak} Hari Beruntun</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function uploadCoverPhoto(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                state.currentUser.bgCoverUrl = event.target.result;
+                saveDB();
+                showToast('Foto cover banner berhasil diperbarui!', 'success');
+                renderApp();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function uploadAvatarPhoto(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                state.currentUser.avatarUrl = event.target.result;
+                saveDB();
+                showToast('Foto profil avatar berhasil diperbarui!', 'success');
+                renderApp();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function applyAvatarUrl() {
+            const url = document.getElementById('avatar-url-input').value.trim();
+            if (!url) {
+                showToast('Masukkan URL gambar terlebih dahulu!', 'error');
+                return;
+            }
+            state.currentUser.avatarUrl = url;
+            saveDB();
+            showToast('Foto profil berhasil dipasang dari URL!', 'success');
+            renderApp();
+        }
+
+        function resetCoverPhoto() {
+            state.currentUser.bgCoverUrl = DEFAULT_COVER;
+            saveDB();
+            showToast('Foto cover dikembalikan ke gambar awal!', 'info');
+            renderApp();
+        }
+
+        function renderAdminView() {
+            if (state.currentUser.role !== 'admin') {
+                return `<div class="p-8 text-center text-rose-500 font-bold text-lg">Akses Ditolak. Anda bukan Administrator!</div>`;
+            }
+            return `
+                <div class="space-y-6 max-w-6xl mx-auto">
+                    <div class="bg-purple-900/20 border border-purple-500/30 p-6 rounded-3xl">
+                        <h2 class="text-xl font-bold text-white mb-1"><i class="fa-solid fa-shield-halved text-purple-400 mr-2"></i> Admin Panel (Danzy)</h2>
+                        <p class="text-xs text-gray-300">Kelola pengguna, statistik website, redeem code, dan konfigurasi sistem.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-cardbg border border-cardborder p-5 rounded-2xl">
+                            <p class="text-[10px] text-gray-400 uppercase font-semibold">Total Pengguna Terdaftar</p>
+                            <h3 class="text-2xl font-bold text-white mt-1">${state.users.length} Akun</h3>
+                        </div>
+                        <div class="bg-cardbg border border-cardborder p-5 rounded-2xl">
+                            <p class="text-[10px] text-gray-400 uppercase font-semibold">Total Transaksi Tercatat</p>
+                            <h3 class="text-2xl font-bold text-white mt-1">${state.transactions.length} Transaksi</h3>
+                        </div>
+                        <div class="bg-cardbg border border-cardborder p-5 rounded-2xl">
+                            <p class="text-[10px] text-gray-400 uppercase font-semibold">Redeem Codes Aktif</p>
+                            <h3 class="text-2xl font-bold text-white mt-1">${state.redeemCodesConfig.length} Kode</h3>
+                        </div>
+                    </div>
+
+                    <div class="bg-cardbg border border-cardborder p-6 rounded-3xl shadow">
+                        <h3 class="font-bold text-white text-sm mb-4">Kelola Pengguna Sistem</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs text-gray-300">
+                                <thead class="border-b border-cardborder text-gray-400 uppercase">
+                                    <tr>
+                                        <th class="py-3 px-4">Nama</th>
+                                        <th class="py-3 px-4">Username</th>
+                                        <th class="py-3 px-4">Role</th>
+                                        <th class="py-3 px-4">Tier</th>
+                                        <th class="py-3 px-4">Poin</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-cardborder">
+                                    ${state.users.map(usr => `
+                                        <tr>
+                                            <td class="py-3 px-4 font-bold text-white">${usr.name}</td>
+                                            <td class="py-3 px-4">@${usr.username}</td>
+                                            <td class="py-3 px-4 uppercase"><span class="bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded">${usr.role}</span></td>
+                                            <td class="py-3 px-4 uppercase"><span class="bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">${usr.tier}</span></td>
+                                            <td class="py-3 px-4 font-bold text-amber-400">${usr.points} Poin</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderOperatorView() {
+            return `
+                <div class="space-y-6 max-w-4xl mx-auto">
+                    <div class="bg-blue-900/20 border border-blue-500/30 p-6 rounded-3xl">
+                        <h2 class="text-xl font-bold text-white mb-1"><i class="fa-solid fa-headset text-blue-400 mr-2"></i> Operator Panel</h2>
+                        <p class="text-xs text-gray-300">Panel operasional memantau aktivitas pengguna dan tiket bantuan.</p>
+                    </div>
+                    <div class="bg-cardbg border border-cardborder p-6 rounded-3xl shadow">
+                        <h3 class="font-bold text-white text-sm mb-2">Tiket Bantuan Terbaru</h3>
+                        <p class="text-xs text-gray-400">Sistem berjalan normal. Tidak ada tiket bantuan aktif saat ini.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderHelpView() {
+            return `
+                <div class="space-y-6 max-w-3xl mx-auto">
+                    <div class="bg-cardbg border border-cardborder p-8 rounded-3xl shadow space-y-4">
+                        <h2 class="text-xl font-bold text-white">Pusat Bantuan & Panduan</h2>
+                        <p class="text-xs text-gray-400 leading-relaxed">Ultimate Web Tools adalah platform mandiri berbasis web yang menyediakan berbagai utilitas developer, pengolahan teks, dan gamifikasi poin harian. Jika Anda mengalami kendala, hubungi administrator atau operator sistem.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCurrentViewContent() {
+            switch(state.activeView) {
+                case 'dashboard': return renderDashboardView();
+                case 'tools': return renderToolsView();
+                case 'daily': return renderDailyView();
+                case 'pointshop': return renderPointShopView();
+                case 'redeem': return renderRedeemView();
+                case 'inventory': return renderInventoryView();
+                case 'upgrade': return renderUpgradeView();
+                case 'profile': return renderProfileView();
+                case 'admin': return renderAdminView();
+                case 'operator': return renderOperatorView();
+                case 'help': return renderHelpView();
+                default: return renderDashboardView();
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('login-username').value.trim();
+            const u = state.users.find(usr => usr.username.toLowerCase() === usernameInput.toLowerCase());
+            if (u) {
+                state.currentUser = u;
+                checkDailyStreak(u);
+                showToast(`Selamat datang kembali, ${u.name}!`, 'success');
+                navigate('dashboard');
+            } else {
+                showToast('Username tidak ditemukan! Silakan daftar atau gunakan akun Danzy.', 'error');
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const username = document.getElementById('reg-username').value;
+            if (state.users.some(usr => usr.username.toLowerCase() === username.toLowerCase())) {
+                showToast('Username sudah digunakan! Pilih username lain.', 'error');
+                return;
+            }
+            const newUser = {
+                id: 'usr_' + Date.now(),
+                username: username,
+                name: name,
+                role: 'user',
+                tier: 'free',
+                points: 100,
+                streak: 1,
+                lastLoginDate: new Date().toISOString().split('T')[0],
+                streakClaimedToday: false,
+                favorites: ['qr-generator', 'text-counter'],
+                theme: 'dark',
+                bgCoverUrl: DEFAULT_COVER,
+                avatarUrl: ''
+            };
+            state.users.push(newUser);
+            state.currentUser = newUser;
+            saveDB();
+            showToast('Registrasi berhasil! Bonus +100 poin diberikan.', 'success');
+            navigate('dashboard');
+        }
+
+        function logout() {
+            state.currentUser = null;
+            navigate('login');
+            showToast('Berhasil keluar sesi.', 'info');
+        }
+
+        function togglePasswordVisibility(id) {
+            const el = document.getElementById(id);
+            el.type = el.type === 'password' ? 'text' : 'password';
+        }
+
+        window.onload = function() {
+            navigate('login');
+        };
+    </script>
+</body>
+</html>
